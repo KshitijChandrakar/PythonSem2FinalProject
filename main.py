@@ -4,7 +4,7 @@ from MyFunctions import *
 import random, os
 from ObjectClass import *
 from scene import *
-
+print("RAAAAAAAAAAAAAH IM STARTING UP RAWr")
 # from ObjectAttributes import *
 class myException(Exception):
     def __init__(self, id):
@@ -16,14 +16,14 @@ screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 
 def gameOverFunc(i):
-    with open(highScoreFile, 'w') as file:
-        file.write(str(environmentAttributes["highScore"]))
     print("Game Over by Collision of", i.Attributes["id"])
     environmentAttributes["GameOver"] = True
-    environmentAttributes["GameRunning"] = False
+    # environmentAttributes["GameRunning"] = False
     raise myException("GameOver")
     pass
-
+def setHighScore():
+    with open(highScoreFile, 'w') as file:
+        file.write(str(environmentAttributes["highScore"]))
 
 #---------------------------------------------------------------------------------------------------------------------------
 # Setting up environment
@@ -36,12 +36,12 @@ environmentAttributes ={
     "screen" : screen,
     "score" : 0,
     "scoreSpeed" : 0.5,
-    "MaxScore" : 9999,
+    "MaxScore" : 99999,
     "WindowRunning" : True,
-    "Won" : False,
-    "GameRunning" : 1,
-    "GameOver" : 0,
-    "FirstRun" : 1,
+    # "Won" : False,
+    # "GameRunning" : 1,
+    # "GameOver" : 0,
+    # "FirstRun" : 1,
     "chanceOfSecond" : 1 - 0.8
 }
 playerAttributes = {
@@ -70,33 +70,39 @@ obstacleAttributes = {
     # "Collider" : False,
     "Constrain" : (True, True),
     "Constrain1" : vector(0,0),
-    "Constrain2" : vector(width + 300,height),
+    "Constrain2" : vector(width + 2000,height),
     "DefaultAcceleration" : vector(0,0),
     "DefaultVelocity" : vector(-4,0),
     "IncVelocity" : (True,False),
-    "VelocityConstraints" : ((-4,-13),),
+    "VelocityConstraints" : ((-4,-20),),
     "Default" : vector(width, height - 50),
     "rest" : vector(50, height - 50),
     "randomise" : True,
     "randomisationList" : [1,0],
-    "randomisationConstrain" : [[width, width+200]],
+    "randomisationConstrain" : [[width, width+2000]],
     "Dimensions" : vector(30,50),
     "color" : (255,0,0),
     "Anti-Gravity" : True
 }
+
 def resetEnv():
-    global player, obstacle, obstacle1, obstacle2
+    global player, obstacle, obstacle1
     player = Box(playerAttributes, environmentAttributes)
     obstacle = Box(obstacleAttributes, environmentAttributes)
     obstacle1 = Box(obstacleAttributes.copy(), environmentAttributes) if random.random() > environmentAttributes["chanceOfSecond"] else None
     environmentAttributes["Objects"] = (player, obstacle, obstacle1)
+    environmentAttributes["score"] = 0
 script_dir = os.path.dirname(os.path.abspath(__file__))
 highScoreFile = os.path.join(script_dir, 'highScore.txt')
 # Read from the input file
 with open(highScoreFile, 'r') as file:
     environmentAttributes["highScore"] = int(float(file.read()))
+def resetEnv1():
+    resetEnv()
+    setHighScore()
 resetEnv()
 # obstacle1 = Box(obstacleAttributes, environmentAttributes) if random.rand() > 0.8 else None
+
 
 # environmentAttributes["Objects"] = (player, obstacle)
 #--------------------------------------------------------------------------------------------------------------------------
@@ -112,26 +118,22 @@ def checkEvent(event):
         environmentAttributes["WindowRunning"] = False
     else:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            # if environmentAttributes["FirstRun"]:
-            #     print("Running for first time")
-            #     environmentAttributes["FirstRun"] = False
+            #
+            # if environmentAttributes["GameOver"] or environmentAttributes["Won"]:
+            #     print("Restarting Game")
+            #     environmentAttributes["GameOver"] = False
+            #     environmentAttributes["Won"] = False
             #     environmentAttributes["GameRunning"] = True
-
-            if environmentAttributes["GameOver"] or environmentAttributes["Won"]:
-                print("Restarting Game")
-                environmentAttributes["GameOver"] = False
-                environmentAttributes["Won"] = False
-                environmentAttributes["GameRunning"] = True
-                del player, obstacle
-                environmentAttributes["score"] = 0
-                resetEnv()
+            #     del player, obstacle
+            #     environmentAttributes["score"] = 0
+            #     resetEnv()
                 # player.debug()
                 # obstacle.debug()
-            else:
-                if player.Attributes["pos"].y >= player.Attributes["rest"].y:
-                    # print("Jumping")
-                    player.Force(player.Attributes["Jump"])
-            pass
+            # else:
+            if player.Attributes["pos"].y >= player.Attributes["rest"].y:
+                # print("Jumping")
+                player.Force(player.Attributes["Jump"])
+            # pass
 def centerText(centerTextStr):
     # centerTextStr =
     centerText = font.render(centerTextStr, True, white)
@@ -139,8 +141,6 @@ def centerText(centerTextStr):
     centerRect.center = width/2, height/2
     screen.blit(centerText, centerRect)
     pass
-
-
 def StartScreen():
     # print("Hi From StartScreen")
     centerText("Press Space to Play")
@@ -191,11 +191,13 @@ def GameLoop():
         environmentAttributes["GameRunning"] = False
         environmentAttributes["Won"] = True
     #If game not over then add score
-    if not environmentAttributes["GameOver"]:
+    # if not environmentAttributes["GameOver"]:
 
-        environmentAttributes["score"] += environmentAttributes["scoreSpeed"]
-        if environmentAttributes["score"] > environmentAttributes["highScore"]:
-            environmentAttributes["highScore"] = environmentAttributes["score"]
+    environmentAttributes["score"] += environmentAttributes["scoreSpeed"]
+    if environmentAttributes["score"] >= environmentAttributes["MaxScore"]:
+        raise myException("Won")
+    if environmentAttributes["score"] > environmentAttributes["highScore"]:
+        environmentAttributes["highScore"] = environmentAttributes["score"]
     pygame.display.flip()
     clock.tick(80)
 
@@ -203,23 +205,31 @@ def GameLoop():
 def GameOver():
     centerText("Game Over")
     pass
+def Won():
+    centerText("You Won!!!")
+    pass
 #--------------------------------------------------------------------------------------------------------------------------
 
 currentScene  = "StartScreen"
 def changeScene(a):
     global currentScene
+    print(environmentAttributes["score"])
+    screen.fill((0,0,0))
+    if scenes[currentScene].uninitialse != None:
+        scenes[currentScene].uninitialse()
     currentScene = a
     print(f"Changed Scene to {currentScene}")
     return currentScene
 scenes = {
     "StartScreen" : scene(StartScreen, event = {pygame.KEYDOWN : (changeScene, "GameLoop")}),
-    "GameLoop" : scene(GameLoop, excep = {"GameOver": (changeScene, "GameOver")}, eventFunction = checkEvent),
-    "GameOver" : scene(GameOver, event = {pygame.KEYDOWN : (changeScene, "StartScreen")})
+    "GameLoop" : scene(GameLoop, excep = {"GameOver": (changeScene, "GameOver"), "Won": (changeScene, "Won")}, eventFunction = checkEvent, uninitialse=resetEnv1, initialise=resetEnv),
+    "GameOver" : scene(GameOver, event = {pygame.KEYDOWN : (changeScene, "StartScreen")}),
+    "Won" : scene(Won, event = {pygame.KEYDOWN : (changeScene, "StartScreen")}),
 }
-# Main game loop
+# Main window loop
 while True:
     # try:
-    screen.fill((0,0,0))
+    # screen.fill((0,0,0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -232,17 +242,14 @@ while True:
                 scenes[currentScene].eventFunction(event)
             # print(currentScene)
     # finally:
+
     try:
+        if not scenes[currentScene].Initialised:
+            scenes[currentScene].Initialised = 1
+            if scenes[currentScene].initialise != None:
+                scenes[currentScene].initialise()
         scenes[currentScene].render()
     except myException as E:
         scenes[currentScene].handleExp(E.id)
     pygame.display.flip()
     pass
-
-
-
-
-# Game Loop
-
-# pygame.quit()
-# sys.exit()

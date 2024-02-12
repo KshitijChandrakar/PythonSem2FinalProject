@@ -17,7 +17,10 @@ class scene():
         except KeyError:
             pass
         pass
-    def __init__(self, renderFunction, event = None, excep = None, eventFunction = None):
+    def __init__(self, renderFunction, event = None, excep = None, eventFunction = None, initialise=None, uninitialse=None):
+        self.initialise = initialise
+        self.Initialised = 0
+        self.uninitialse = uninitialse
         self.renderFunction = renderFunction
         self.events = event #events = {eventType: what To do in case of event}
         self.excep = excep #Exceptions that scens raise
