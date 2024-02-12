@@ -38,11 +38,9 @@ environmentAttributes ={
     "scoreSpeed" : 0.5,
     "MaxScore" : 99999,
     "WindowRunning" : True,
-    # "Won" : False,
-    # "GameRunning" : 1,
-    # "GameOver" : 0,
-    # "FirstRun" : 1,
-    "chanceOfSecond" : 1 - 0.8
+    "chanceOfSecond" : 1 - 0.6,
+    "chanceOfThird" : 1 - 0.3,
+
 }
 playerAttributes = {
     "id" : "Player",
@@ -86,11 +84,12 @@ obstacleAttributes = {
 }
 
 def resetEnv():
-    global player, obstacle, obstacle1
-    player = Box(playerAttributes, environmentAttributes)
-    obstacle = Box(obstacleAttributes, environmentAttributes)
-    obstacle1 = Box(obstacleAttributes.copy(), environmentAttributes) if random.random() > environmentAttributes["chanceOfSecond"] else None
-    environmentAttributes["Objects"] = (player, obstacle, obstacle1)
+    player = Box(playerAttributes.copy(), environmentAttributes)
+    obstacle = Box(obstacleAttributes.copy(), environmentAttributes)
+    obstacle1 = Box(editCopyDict(obstacleAttributes, {"color" : (0,255,0)}), environmentAttributes) if random.random() > environmentAttributes["chanceOfSecond"] else None
+    obstacle2 = Box(editCopyDict(obstacleAttributes, {"color" : (0,0,255)}), environmentAttributes) if random.random() > environmentAttributes["chanceOfThird"] else None
+
+    environmentAttributes["Objects"] = (player, obstacle, obstacle1, obstacle2)
     environmentAttributes["score"] = 0
 script_dir = os.path.dirname(os.path.abspath(__file__))
 highScoreFile = os.path.join(script_dir, 'highScore.txt')
@@ -112,6 +111,10 @@ resetEnv()
 
 #--------------------------------------------------------------------------------------------------------------------------
 #Defininig a few functions
+def updateEnv():
+    environmentAttributes["chanceOfSecond"] = map(environmentAttributes["score"],0,environmentAttributes["MaxScore"], -0.1, 1)
+    environmentAttributes["chanceOfThird"] = map(environmentAttributes["score"],0,environmentAttributes["MaxScore"], -0.4, 1)
+    pass
 def checkEvent(event):
     global player, obstacle
     if event.type == pygame.QUIT:
@@ -155,7 +158,7 @@ def GameLoop():
     # while environmentAttributes["WindowRunning"]:
     # for event in pygame.event.get():
     #     checkEvent(event)
-
+    updateEnv()
     screen.fill(black)
 
     # pygame.draw.line(environmentAttributes["screen"], white, (0,30), (width, 30))
@@ -213,7 +216,7 @@ def Won():
 currentScene  = "StartScreen"
 def changeScene(a):
     global currentScene
-    print(environmentAttributes["score"])
+    # print(environmentAttributes["score"])
     screen.fill((0,0,0))
     if scenes[currentScene].uninitialse != None:
         scenes[currentScene].uninitialse()

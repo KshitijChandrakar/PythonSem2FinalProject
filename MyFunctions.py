@@ -1,5 +1,14 @@
 def EmptyFunction():
     pass
+def editCopyDict(a1,b):
+    a = a1.copy()
+    for i in b:
+        try:
+            a[i] = b[i]
+        except KeyError:
+            pass
+    return a
+# print(editCopyDict({"a" : 1, "b" : 2}, {"a" : 2}))
 def removeNone(List):
     out = []
     for i in range(len(List)):

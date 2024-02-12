@@ -34,6 +34,30 @@ class Box:
             pass
         except KeyError:
             pass
+        try:
+            if self.Attributes["rest"] != None:
+                self.Attributes["Constrain"] = self.Attributes["Constrain"]
+                for i in range(len(self.Attributes["pos"])):
+                    if self.Attributes["Constrain"][i]:
+                        self.constrained = self.Attributes["Constrain1"][i] < self.Attributes["pos"][i] < self.Attributes["Constrain2"][i]
+                    else:
+                        self.constrained = 1
+                    if not self.constrained:
+                        self.Attributes["Velocity"], self.Attributes["Acceleration"] = self.Attributes["DefaultVelocity"].copy(), vector(0,0)
+                        # If it goes out of constrains then check if randomise is true if it is
+                        # then randomie the position from randomisationList else go to rest position
+                        # and reset velocity and Acceleration
+                        #Applying Constrains
+                        #Randomise Position
+                        if self.Attributes["randomise"] == 1 and self.Attributes["randomisationList"][i]:
+                            self.Attributes["pos"][i] = self.randomScalar(i)
+                        elif self.Attributes["randomise"] == 0:
+                            self.Attributes["pos"][i] = self.Attributes["rest"][i]
+                    elif self.constrained and not self.Attributes["Anti-Gravity"]:
+                        #Applying Gravity
+                        self.Force(self.environmentAttributes["Gravity"])
+        except KeyError:
+            raise
     def randomScalar(self, i):
         # print(i)
 
@@ -55,26 +79,8 @@ class Box:
         self.Attributes["Velocity"] += self.Attributes["Acceleration"]
         self.Attributes["pos"] += self.Attributes["Velocity"]
         self.Attributes["Acceleration"] = vector(0,0)
-        if self.Attributes["rest"] != None:
-            for i in range(len(self.Attributes["pos"])):
-                if self.Attributes["Constrain"][i]:
-                    constrained = self.Attributes["Constrain1"][i] < self.Attributes["pos"][i] < self.Attributes["Constrain2"][i]
-                else:
-                    constrained = 1
-                if not constrained:
-                    self.Attributes["Velocity"], self.Attributes["Acceleration"] = self.Attributes["DefaultVelocity"].copy(), vector(0,0)
-                    # If it goes out of constrains then check if randomise is true if it is
-                    # then randomie the position from randomisationList else go to rest position
-                    # and reset velocity and Acceleration
-                    #Applying Constrains
-                    #Randomise Position
-                    if self.Attributes["randomise"] == 1 and self.Attributes["randomisationList"][i]:
-                        self.Attributes["pos"][i] = self.randomScalar(i)
-                    elif self.Attributes["randomise"] == 0:
-                        self.Attributes["pos"][i] = self.Attributes["rest"][i]
-                elif constrained and not self.Attributes["Anti-Gravity"]:
-                    #Applying Gravity
-                    self.Force(self.environmentAttributes["Gravity"])
+
+
 
 
         # self.Attributes["Acceleration"] = vector(0,0)
@@ -104,7 +110,7 @@ class Box:
         print(self.Attributes["id"], self.Attributes["Velocity"], )
         pass
     def __init__(self, Attr, env):
-        print()
+        # print()
         # print("initializing...", Attr["id"], Attr["Default"])
         self. Attributes = Attr
         self.environmentAttributes = env
