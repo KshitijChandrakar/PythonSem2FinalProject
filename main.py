@@ -3,6 +3,8 @@ from myColors import *
 from MyFunctions import *
 import random, os
 from ObjectClass import *
+from scene import *
+
 # from ObjectAttributes import *
 class myException(Exception):
     def __init__(self, id):
@@ -13,13 +15,6 @@ width, height = startPygame(hypo = 1000, ratioa = 21, ratiob = 10, caption = "Di
 screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 
-def gameOverFunc1(i):
-    with open(highScoreFile, 'w') as file:
-        file.write(str(environmentAttributes["highScore"]))
-    print("Game Over by Collision of", i.Attributes["id"])
-    environmentAttributes["GameOver"] = True
-    environmentAttributes["GameRunning"] = False
-    pass
 def gameOverFunc(i):
     with open(highScoreFile, 'w') as file:
         file.write(str(environmentAttributes["highScore"]))
@@ -144,39 +139,8 @@ def centerText(centerTextStr):
     centerRect.center = width/2, height/2
     screen.blit(centerText, centerRect)
     pass
-def renderScores():
-    sco = int(round(environmentAttributes["score"], -1))
-    scoreText = font.render(f"Score: {sco}", True, white)
-    scoreRect = scoreText.get_rect()
-    scoreRect.center = width - scoreRect.width/2 - 30, 30
-    hsco = int(round(environmentAttributes["highScore"], -1))
-    hscoreText = font.render(f"High Score: {hsco}", True, white)
-    hscoreRect = scoreText.get_rect()
-    hscoreRect.center = scoreRect.width/2 + 30, 35
-    screen.blit(scoreText, scoreRect)
-    screen.blit(hscoreText, hscoreRect)
 
-def runGame():
-    # if environmentAttributes["GameRunning"]:
-        renderScores()
-        #Run it ALl for all objects
-        for i in environmentAttributes["Objects"]:
-            if i != None:
-                i.run()
-                # if i.checkCollision(removeNoneItem(environmentAttributes["Objects"], i)):
-                #     i.onCollision()
-        #Check if environmentAttributes["Won"]
-        if environmentAttributes["score"] >= environmentAttributes["MaxScore"]:
-            environmentAttributes["GameRunning"] = False
-            environmentAttributes["Won"] = True
-        #If game not over then add score
-        if not environmentAttributes["GameOver"]:
 
-            environmentAttributes["score"] += environmentAttributes["scoreSpeed"]
-            if environmentAttributes["score"] > environmentAttributes["highScore"]:
-                environmentAttributes["highScore"] = environmentAttributes["score"]
-
-    # pass
 def StartScreen():
     # print("Hi From StartScreen")
     centerText("Press Space to Play")
@@ -203,8 +167,35 @@ def GameLoop():
     #Check if game is still running
     # if environmentAttributes["GameRunning"]:
         # print("Game Is RUnnning")
-    renderScores()
-    runGame()
+    #-----------------------------------------------------------------------------
+    #Rendering Scores
+    sco = int(round(environmentAttributes["score"], -1))
+    scoreText = font.render(f"Score: {sco}", True, white)
+    scoreRect = scoreText.get_rect()
+    scoreRect.center = width - scoreRect.width/2 - 30, 30
+    hsco = int(round(environmentAttributes["highScore"], -1))
+    hscoreText = font.render(f"High Score: {hsco}", True, white)
+    hscoreRect = scoreText.get_rect()
+    hscoreRect.center = scoreRect.width/2 + 30, 35
+    screen.blit(scoreText, scoreRect)
+    screen.blit(hscoreText, hscoreRect)        #Run it ALl for all objects
+    #-----------------------------------------------------------------------------
+
+    for i in environmentAttributes["Objects"]:
+        if i != None:
+            i.run()
+            # if i.checkCollision(removeNoneItem(environmentAttributes["Objects"], i)):
+            #     i.onCollision()
+    #Check if environmentAttributes["Won"]
+    if environmentAttributes["score"] >= environmentAttributes["MaxScore"]:
+        environmentAttributes["GameRunning"] = False
+        environmentAttributes["Won"] = True
+    #If game not over then add score
+    if not environmentAttributes["GameOver"]:
+
+        environmentAttributes["score"] += environmentAttributes["scoreSpeed"]
+        if environmentAttributes["score"] > environmentAttributes["highScore"]:
+            environmentAttributes["highScore"] = environmentAttributes["score"]
     pygame.display.flip()
     clock.tick(80)
 
@@ -214,6 +205,39 @@ def GameOver():
     pass
 #--------------------------------------------------------------------------------------------------------------------------
 
+currentScene  = "StartScreen"
+def changeScene(a):
+    global currentScene
+    currentScene = a
+    print(f"Changed Scene to {currentScene}")
+    return currentScene
+scenes = {
+    "StartScreen" : scene(StartScreen, event = {pygame.KEYDOWN : (changeScene, "GameLoop")}),
+    "GameLoop" : scene(GameLoop, excep = {"GameOver": (changeScene, "GameOver")}, eventFunction = checkEvent),
+    "GameOver" : scene(GameOver, event = {pygame.KEYDOWN : (changeScene, "StartScreen")})
+}
+# Main game loop
+while True:
+    # try:
+    screen.fill((0,0,0))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        else:
+            #print(event)
+            if scenes[currentScene].events != None:
+                scenes[currentScene].handleEvent(event.type)
+            if scenes[currentScene].eventFunction != None:
+                scenes[currentScene].eventFunction(event)
+            # print(currentScene)
+    # finally:
+    try:
+        scenes[currentScene].render()
+    except myException as E:
+        scenes[currentScene].handleExp(E.id)
+    pygame.display.flip()
+    pass
 
 
 
