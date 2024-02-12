@@ -1,4 +1,5 @@
-
+def EmptyFunction():
+    pass
 def removeNone(List):
     out = []
     for i in range(len(List)):

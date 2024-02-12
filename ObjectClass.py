@@ -6,17 +6,32 @@ class Box:
     # screenface = pygame.screenface((0,0))
     def changeVel(self, i):
         # print("Hi from changing velocity")
-
         self.Attributes["Velocity"][i] = map(self.environmentAttributes["score"], 0, self.environmentAttributes["MaxScore"], self.Attributes["VelocityConstraints"][i][0], self.Attributes["VelocityConstraints"][i][1])
     def run(self):
-        self.update()
-        self.render()
+        try:
+            if self.Attributes["Update"]:
+                self.update()
+        except KeyError:
+            pass
+        try:
+            if self.Attributes["Render"]:
+                self.render()
+        except KeyError:
+            pass
         try:
             if self.Attributes["IncVelocity"][0]:
                 self.changeVel(0)
             if self.Attributes["IncVelocity"][1]:
                 self.changeVel(1)
-
+        except KeyError:
+            pass
+        try:
+            if self.Attributes["Collider"]:
+                if self.checkCollision(removeNoneItem(self.environmentAttributes["Objects"], self)):
+                    self.onCollision(self)
+                    pass
+                pass
+            pass
         except KeyError:
             pass
     def randomScalar(self, i):
@@ -97,6 +112,11 @@ class Box:
         self.Attributes["pos"] = self.Attributes["Default"].copy()# if not self.Attributes["randomise"] else self.randomise(self.Attributes["pos"])
         self.Attributes["Velocity"] = self.Attributes["DefaultVelocity"].copy()
         self.Attributes["Acceleration"] = self.Attributes["DefaultAcceleration"].copy()
+        try:
+            self.onCollision = self.Attributes["CollisionFunction"] if self.Attributes["Collider"] else EmptyFunction
+        except KeyError:
+            pass
+
         # print("initialized...", self.Attributes["id"], self.Attributes["Default"])
         pass
 # x = Box(playerAttributes)
