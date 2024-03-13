@@ -27,7 +27,7 @@ def setHighScore():
 
 #---------------------------------------------------------------------------------------------------------------------------
 # Setting up environment
-font = pygame.font.Font(r"C:\Users\ASUS\Documents\University\sem2\Python\FinalProject\Idea 2\Gotham-Bold.otf", 32)  # Use default font, size 36
+font = pygame.font.Font(r"Gotham-Bold.otf", 32)  # Use default font, size 36
 
 environmentAttributes ={
     "Gravity" : vector(0,0.2),
@@ -84,6 +84,7 @@ obstacleAttributes = {
 }
 
 def resetEnv():
+    global player, obstacle, obstacle1, obstacle2
     player = Box(playerAttributes.copy(), environmentAttributes)
     obstacle = Box(obstacleAttributes.copy(), environmentAttributes)
     obstacle1 = Box(editCopyDict(obstacleAttributes, {"color" : (0,255,0)}), environmentAttributes) if random.random() > environmentAttributes["chanceOfSecond"] else None
