@@ -6,10 +6,6 @@ from ObjectClass import *
 from scene import *
 print("RAAAAAAAAAAAAAH IM STARTING UP RAWr")
 # from ObjectAttributes import *
-class myException(Exception):
-    def __init__(self, id):
-        self.id = id
-        pass
 vector = pygame.math.Vector2
 width, height = startPygame(hypo = 1000, ratioa = 21, ratiob = 10, caption = "Dino without AI")
 screen = pygame.display.set_mode((width, height))

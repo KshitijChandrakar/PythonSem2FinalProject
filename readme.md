@@ -1,7 +1,20 @@
-Final Project for my semester 2 python module
-# What the game is about
+# Final Project for semester 2 python
+Name: Kshitij Chandrakar  
+Course: B.Tech CSE (Hons)  
+Semester: 2   
+SAP: 500124827   
+Enrollment Number: 2142231661  
 
-You jump, dodge obstacles and the character follows your actual body movement
+Topic: Video Game Using Computer Vision
+
+### About the project:
+As the name suggest, its a platform based runner game, however the controls are based on the movement of the user as captured by the camera.  
+it utilizes various technologies like:
+ - Movenet
+ - Tensorflow
+ - Computer Vision
+
+in the game You can jump, dodge obstacles and the character follows your actual body movements as captured from the camera
 
 # To do List
 

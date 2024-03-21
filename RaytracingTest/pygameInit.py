@@ -1,6 +1,7 @@
 import pygame
 import sys
 #Hypo = sqrt((x(b/a+b))^2 + ((a/a+b)x)^2)
+
 def checkQuit():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
