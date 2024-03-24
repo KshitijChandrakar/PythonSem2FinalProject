@@ -1,5 +1,10 @@
-from random import random
 a = {
- "Random" : random()
+    "b" : 12
 }
-a = a.copy()
+try:
+    print(a["a"])
+    print(a["b"])
+
+    pass
+except KeyError:
+    pass

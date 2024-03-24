@@ -1,22 +1,14 @@
-from pygameInit import *
 from myColors import *
 from MyFunctions import *
 import random, os
 from ObjectClass import *
 from scene import *
+from Attributes import *
+
 print("RAAAAAAAAAAAAAH IM STARTING UP RAWr")
 # from ObjectAttributes import *
-vector = pygame.math.Vector2
-width, height = startPygame(hypo = 1000, ratioa = 21, ratiob = 10, caption = "Dino without AI")
-screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 
-def gameOverFunc(i):
-    print("Game Over by Collision of", i.Attributes["id"])
-    environmentAttributes["GameOver"] = True
-    # environmentAttributes["GameRunning"] = False
-    raise myException("GameOver")
-    pass
 def setHighScore():
     with open(highScoreFile, 'w') as file:
         file.write(str(environmentAttributes["highScore"]))
@@ -24,61 +16,6 @@ def setHighScore():
 #---------------------------------------------------------------------------------------------------------------------------
 # Setting up environment
 font = pygame.font.Font(r"Gotham-Bold.otf", 32)  # Use default font, size 36
-
-environmentAttributes ={
-    "Gravity" : vector(0,0.2),
-    "width" : width,
-    "height" : height,
-    "screen" : screen,
-    "score" : 0,
-    "scoreSpeed" : 0.5,
-    "MaxScore" : 99999,
-    "WindowRunning" : True,
-    "chanceOfSecond" : 1 - 0.6,
-    "chanceOfThird" : 1 - 0.3,
-
-}
-playerAttributes = {
-    "id" : "Player",
-    "Render" : True,
-    "Update" : True,
-    "Collider" : True,
-    "CollisionFunction" : gameOverFunc,
-    "Constrain" : (True, True),
-    "Constrain1" : vector(0,0),
-    "Constrain2" : vector(width,height - 50),
-    "DefaultAcceleration" : vector(0,0),
-    "DefaultVelocity" : vector(0,0),
-    "Default" : vector(50, height - 50),
-    "rest" : vector(50, height - 50),
-    "Jump" : vector(0, -10),
-    "randomise" : False,
-    "Dimensions" : vector(30,50),
-    "color" : color_grey,
-    "Anti-Gravity" : False
-}
-obstacleAttributes = {
-    "id" : "Obstacle0",
-    "Render" : True,
-    "Update" : True,
-    # "Collider" : False,
-    "Constrain" : (True, True),
-    "Constrain1" : vector(0,0),
-    "Constrain2" : vector(width + 2000,height),
-    "DefaultAcceleration" : vector(0,0),
-    "DefaultVelocity" : vector(-4,0),
-    "IncVelocity" : (True,False),
-    "VelocityConstraints" : ((-4,-20),),
-    "Default" : vector(width, height - 50),
-    "rest" : vector(50, height - 50),
-    "randomise" : True,
-    "randomisationList" : [1,0],
-    "randomisationConstrain" : [[width, width+2000]],
-    "Dimensions" : vector(30,50),
-    "color" : (255,0,0),
-    "Anti-Gravity" : True
-}
-
 def resetEnv():
     global player, obstacle, obstacle1, obstacle2
     player = Box(playerAttributes.copy(), environmentAttributes)
@@ -150,13 +87,23 @@ def TestGameLoop():
     print("Hi from game loop")
     centerText("Runnning")
     pass
+def loadbg():
+    global bg
+    try:
+        bg = pygame.transform.scale(pygame.image.load(environmentAttributes["GameBackgroundImage"]), (width, height))
+    except KeyError:
+        pass
+
 def GameLoop():
     # print("Hi From Game Loop")
     # while environmentAttributes["WindowRunning"]:
     # for event in pygame.event.get():
     #     checkEvent(event)
     updateEnv()
-    screen.fill(black)
+    try:
+        screen.blit(bg, (0,0))
+    except KeyError:
+        screen.fill(black)
 
     # pygame.draw.line(environmentAttributes["screen"], white, (0,30), (width, 30))
     # "Press Space To Start" if environmentAttributes["FirstRun"]\
@@ -178,8 +125,9 @@ def GameLoop():
     hscoreRect = scoreText.get_rect()
     hscoreRect.center = scoreRect.width/2 + 30, 35
     screen.blit(scoreText, scoreRect)
-    screen.blit(hscoreText, hscoreRect)        #Run it ALl for all objects
+    screen.blit(hscoreText, hscoreRect)
     #-----------------------------------------------------------------------------
+    #Run it ALl for all objects
 
     for i in environmentAttributes["Objects"]:
         if i != None:
@@ -222,7 +170,7 @@ def changeScene(a):
     return currentScene
 scenes = {
     "StartScreen" : scene(StartScreen, event = {pygame.KEYDOWN : (changeScene, "GameLoop")}),
-    "GameLoop" : scene(GameLoop, excep = {"GameOver": (changeScene, "GameOver"), "Won": (changeScene, "Won")}, eventFunction = checkEvent, uninitialse=resetEnv1, initialise=resetEnv),
+    "GameLoop" : scene(GameLoop, excep = {"GameOver": (changeScene, "GameOver"), "Won": (changeScene, "Won")}, eventFunction = checkEvent, uninitialse=resetEnv1, initialise=(resetEnv, loadbg)),
     "GameOver" : scene(GameOver, event = {pygame.KEYDOWN : (changeScene, "StartScreen")}),
     "Won" : scene(Won, event = {pygame.KEYDOWN : (changeScene, "StartScreen")}),
 }

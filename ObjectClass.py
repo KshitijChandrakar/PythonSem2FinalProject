@@ -1,5 +1,6 @@
 from MyFunctions import *
-import pygame, random, sys
+import pygame, random, sys, os
+from Filenames import *
 vector = pygame.math.Vector2
 coll = checkCollisionVector
 class Box:
@@ -72,7 +73,20 @@ class Box:
             except IndexError:
                 continue
     def render(self):
-        pygame.draw.rect(self.environmentAttributes["screen"], self.Attributes["color"], (self.Attributes["pos"].x, self.Attributes["pos"].y, self.Attributes["Dimensions"].x, self.Attributes["Dimensions"].y))
+        try:
+            image = []
+            for i in self.Attributes['Image']:
+                image.append(pygame.transform.scale(pygame.image.load(i).convert_alpha(), self.Attributes["Dimensions"]))
+            # self.environmentAttributes["score"]
+            NumOfImages = len(image)
+            try:
+                CurrentFrameNumber = int((self.environmentAttributes['score']//self.Attributes["changeFrameCount"])%NumOfImages)
+            except ZeroDivisionError:
+                CurrentFrameNumber = 0
+            self.environmentAttributes["screen"].blit(image[CurrentFrameNumber], self.Attributes["pos"])
+        except (KeyError, IndexError):
+            pygame.draw.rect(self.environmentAttributes["screen"], self.Attributes["color"], (self.Attributes["pos"].x, self.Attributes["pos"].y, self.Attributes["Dimensions"].x, self.Attributes["Dimensions"].y))
+            pass
         # self.environmentAttributes["screen"].fill((255,0,0))
         pass
     def update(self):

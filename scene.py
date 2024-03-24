@@ -17,9 +17,17 @@ class scene():
         except KeyError:
             pass
         pass
+    def initialise(self):
+        try:
+            for i in self.initialise1:
+                i()
+        except TypeError:
+            pass
     def __init__(self, renderFunction, event = None, excep = None, eventFunction = None, initialise=None, uninitialse=None):
-        self.initialise = initialise
+        self.initialise1 = initialise
+
         self.Initialised = 0
+
         self.uninitialse = uninitialse
         self.renderFunction = renderFunction
         self.events = event #events = {eventType: what To do in case of event}
