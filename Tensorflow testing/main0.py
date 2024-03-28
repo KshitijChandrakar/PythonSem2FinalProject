@@ -2,9 +2,9 @@ from movenet import *
 
 ## Load the input image
 # image_path = 'input_image.jpeg'
-# image_path = r"D:\University\sem2\Python\PythonSem2FinalProject\Tensorflow testing\input_image.jpeg"  # Replace with your image path
-# image = tf.io.read_file(image_path)
-# image = tf.image.decode_jpeg(image)
+image_path = r"D:\University\sem2\Python\PythonSem2FinalProject\Tensorflow testing\input_image.jpeg"  # Replace with your image path
+image1 = tf.io.read_file(image_path)
+image1 = tf.image.decode_jpeg(image1)
 
 
 # input_image = tf.expand_dims(image, axis=0)
@@ -36,7 +36,7 @@ while True:
     if not ret:
         print("Error: Could not capture frame.")
         break
-    image = frame
+    image = image1
     # Display the frame in the window
     # cv2.imshow("Camera Output", frame)
     input_image = tf.expand_dims(image, axis=0)
