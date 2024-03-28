@@ -55,6 +55,37 @@ KEYPOINT_EDGE_INDS_TO_COLOR = {
     (14, 16): 'c'
 }
 
+
+def extract_keypoint_coordinates(keypoints_with_scores, height, width, keypoint_threshold=0.02):
+    """Extracts xy coordinates of keypoints from keypoints_with_scores array.
+
+    Args:
+        keypoints_with_scores: A numpy array with shape [1, 1, 17, 3] representing
+            the keypoint coordinates and scores returned from the MoveNet model.
+        height: height of the image in pixels.
+        width: width of the image in pixels.
+        keypoint_threshold: minimum confidence score for a keypoint to be
+            visualized.
+
+    Returns:
+        A numpy array containing the xy coordinates of all keypoints of all detected entities.
+    """
+    keypoints_xy = []
+    num_instances, _, _, _ = keypoints_with_scores.shape
+    for idx in range(num_instances):
+        kpts_x = keypoints_with_scores[0, idx, :, 1]
+        kpts_y = keypoints_with_scores[0, idx, :, 0]
+        kpts_scores = keypoints_with_scores[0, idx, :, 2]
+        kpts_absolute_xy = np.stack(
+            [width * np.array(kpts_x), height * np.array(kpts_y)], axis=-1)
+        kpts_above_thresh_absolute = kpts_absolute_xy[
+            kpts_scores > keypoint_threshold, :]
+        keypoints_xy.append(kpts_above_thresh_absolute)
+    if keypoints_xy:
+        return np.concatenate(keypoints_xy, axis=0)
+    else:
+        return np.zeros((0, 2))
+
 def _keypoints_and_edges_for_display(keypoints_with_scores,
                                      height,
                                      width,

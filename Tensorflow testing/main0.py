@@ -1,4 +1,5 @@
 from movenet import *
+import pickle
 
 ## Load the input image
 # image_path = 'input_image.jpeg'
@@ -39,6 +40,7 @@ while True:
     image = image1
     # Display the frame in the window
     # cv2.imshow("Camera Output", frame)
+
     input_image = tf.expand_dims(image, axis=0)
     input_image = tf.image.resize_with_pad(input_image, input_size, input_size)
 
@@ -50,6 +52,7 @@ while True:
         display_image, 1280, 1280), dtype=tf.int32)
     output_overlay = draw_prediction_on_image(
         np.squeeze(display_image.numpy(), axis=0), keypoints)
+
     cv2.imshow("Output", output_overlay)
     # Check for key press to exit
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -60,6 +63,5 @@ cap.release()
 cv2.destroyAllWindows()
 
 # plt.figure(figsize=(5, 5))
-# plt.imshow(output_overlay)
 # plt.axis('off')
 # plt.show()
