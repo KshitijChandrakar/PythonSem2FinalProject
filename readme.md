@@ -22,10 +22,12 @@ in the game You can jump, dodge obstacles and the character follows your actual 
       - [x] Its a game where you have to dodge obstacles
       - [x] Create the Sprites
       - Create the body models
- 2. Train an AI model to recognise body movement
-      - Preferably use Google's  teachable machine otherwise we could do tensorflow from scratch (Although that would create a problem with the dataset but whatever)
- 3. Track average body postion relative to previous position to check if it jumped
+ 2. [x] Train an AI model to recognise body movement
+      - [x] Preferably use Google's  teachable machine otherwise we could do tensorflow from scratch (Although that would create a problem with the dataset but whatever)
+      - [x] used movenet
+ 3. [x] Track average body postion relative to previous position to check if it jumped
     - if it did jump then jump the main character
+    - Added Controls for the character
  4. If possible, add body models to the game along with animations that follow the body movement
 
 

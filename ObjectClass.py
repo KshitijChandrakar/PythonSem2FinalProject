@@ -7,7 +7,8 @@ class Box:
     # screenface = pygame.screenface((0,0))
     def changeVel(self, i):
         # print("Hi from changing velocity")
-        self.Attributes["Velocity"][i] = map(self.environmentAttributes["score"], 0, self.environmentAttributes["MaxScore"], self.Attributes["VelocityConstraints"][i][0], self.Attributes["VelocityConstraints"][i][1])
+        self.Attributes["Velocity"][i] = map1(self.environmentAttributes["score"], 0, self.environmentAttributes["MaxScore"], self.Attributes["VelocityConstraints"][i][0], self.Attributes["VelocityConstraints"][i][1])
+        # print(self.Attributes["Velocity"])
     def run(self):
         try:
             if self.Attributes["Update"]:
@@ -37,23 +38,44 @@ class Box:
             pass
         try:
             if self.Attributes["rest"] != None:
-                self.Attributes["Constrain"] = self.Attributes["Constrain"]
+                # self.Attributes["Constrain"] = self.Attributes["Constrain"]
                 for i in range(len(self.Attributes["pos"])):
                     if self.Attributes["Constrain"][i]:
-                        self.constrained = self.Attributes["Constrain1"][i] < self.Attributes["pos"][i] < self.Attributes["Constrain2"][i]
+                        # self.constrained = self.Attributes["Constrain1"][i] <= self.Attributes["pos"][i] - self.Attributes["Dimensions"][i]/2 < self.Attributes["pos"][i] + self.Attributes["Dimensions"][i]/2 <= self.Attributes["Constrain2"][i]
+                        # print(f"{self.constrained} {self.Attributes['id']}")
+                        try:
+                            if self.Attributes["RevA"] == 0:
+                                self.constrained = self.Attributes["Constrain1"][i] < self.Attributes["pos"][i] < self.Attributes["Constrain2"][i]
+                            else:
+                                self.constrained = self.Attributes["Constrain1"][i] < self.Attributes["pos"][i] - self.Attributes["Dimensions"][i]/2 < self.Attributes["pos"][i] + self.Attributes["Dimensions"][i]/2 < self.Attributes["Constrain2"][i]
+                        except KeyError:
+                            self.constrained = self.Attributes["Constrain1"][i] < self.Attributes["pos"][i] - self.Attributes["Dimensions"][i]/2 < self.Attributes["pos"][i] + self.Attributes["Dimensions"][i]/2 < self.Attributes["Constrain2"][i]
+
                     else:
                         self.constrained = 1
                     if not self.constrained:
-                        self.Attributes["Velocity"], self.Attributes["Acceleration"] = self.Attributes["DefaultVelocity"].copy(), vector(0,0)
+                        try:
+                            if not self.Attributes["RevA"]:
+                                self.Attributes["Velocity"][i], self.Attributes["Acceleration"][i] = self.Attributes["DefaultVelocity"][i], self.Attributes["DefaultAcceleration"][i]
+                                pass
+                        except KeyError:
+                            self.Attributes["Velocity"][i], self.Attributes["Acceleration"][i] = self.Attributes["DefaultVelocity"][i], self.Attributes["DefaultAcceleration"][i]
+
                         # If it goes out of constrains then check if randomise is true if it is
                         # then randomie the position from randomisationList else go to rest position
                         # and reset velocity and Acceleration
                         #Applying Constrains
                         #Randomise Position
-                        if self.Attributes["randomise"] == 1 and self.Attributes["randomisationList"][i]:
+                        if self.Attributes["randomise"][i] == 1 and self.Attributes["randomisationList"][i]:
                             self.Attributes["pos"][i] = self.randomScalar(i)
-                        elif self.Attributes["randomise"] == 0:
-                            self.Attributes["pos"][i] = self.Attributes["rest"][i]
+                        elif self.Attributes["randomise"][i] == 0:
+                            try:
+                                self.Attributes["Velocity"][i] *= self.Attributes["Rev"]
+                            except KeyError:
+                                # print(f'resetting {self.Attributes['id']}')
+                                self.debug()
+
+                                self.Attributes["pos"][i] = self.Attributes["rest"][i]
                     elif self.constrained and not self.Attributes["Anti-Gravity"]:
                         #Applying Gravity
                         self.Force(self.environmentAttributes["Gravity"])
@@ -74,19 +96,39 @@ class Box:
                 continue
     def render(self):
         try:
-            image = []
-            for i in self.Attributes['Image']:
-                image.append(pygame.transform.scale(pygame.image.load(i).convert_alpha(), self.Attributes["Dimensions"]))
-            # self.environmentAttributes["score"]
-            NumOfImages = len(image)
-            try:
-                CurrentFrameNumber = int((self.environmentAttributes['score']//self.Attributes["changeFrameCount"])%NumOfImages)
-            except ZeroDivisionError:
-                CurrentFrameNumber = 0
-            self.environmentAttributes["screen"].blit(image[CurrentFrameNumber], self.Attributes["pos"])
+            if self.Attributes["Sprites"]:
+                try:
+                    try:
+                        CurrentFrameNumber = int((self.environmentAttributes['score']//self.Attributes["changeFrameCount"][self.Attributes["CurrentSprite"]])%len(self.sprites[self.Attributes["CurrentSprite"]]))
+                    except KeyError:
+                        CurrentFrameNumber = int((self.environmentAttributes['score']//self.Attributes["changeFrameCount"])%self.spritesheet[0].cols)
+                except ZeroDivisionError:
+                    CurrentFrameNumber = 0
+                # self.environmentAttributes["screen"].blit(self.sprites[CurrentFrameNumber], self.Attributes["pos"])
+                try:
+                    if self.Attributes["SwitchSprites"]:
+                        self.environmentAttributes["screen"].blit(pygame.transform.scale(self.sprites[self.Attributes["CurrentSprite"]][CurrentFrameNumber].convert_alpha(), self.Attributes["Dimensions"]), self.Attributes["pos"])
+                    else:
+                        self.environmentAttributes["screen"].blit(pygame.transform.scale(self.sprites[CurrentFrameNumber].convert_alpha(), self.Attributes["Dimensions"]), self.Attributes["pos"])
+                except KeyError:
+                    self.environmentAttributes["screen"].blit(pygame.transform.scale(self.sprites[CurrentFrameNumber].convert_alpha(), self.Attributes["Dimensions"]), self.Attributes["pos"])
         except (KeyError, IndexError):
-            pygame.draw.rect(self.environmentAttributes["screen"], self.Attributes["color"], (self.Attributes["pos"].x, self.Attributes["pos"].y, self.Attributes["Dimensions"].x, self.Attributes["Dimensions"].y))
-            pass
+            try:
+                if self.Attributes["Image"]:
+                    image = []
+                    for i in self.Attributes['Image']:
+                        image.append(pygame.transform.scale(pygame.image.load(i).convert_alpha(), self.Attributes["Dimensions"]))
+
+                    # self.environmentAttributes["score"]
+                    NumOfImages = len(image)
+                    try:
+                        CurrentFrameNumber = int((self.environmentAttributes['score']//self.Attributes["changeFrameCount"])%NumOfImages)
+                    except ZeroDivisionError:
+                        CurrentFrameNumber = 0
+                    self.environmentAttributes["screen"].blit(image[CurrentFrameNumber], self.Attributes["pos"])
+            except (KeyError, IndexError):
+                pygame.draw.rect(self.environmentAttributes["screen"], self.Attributes["color"], (self.Attributes["pos"].x, self.Attributes["pos"].y, self.Attributes["Dimensions"].x, self.Attributes["Dimensions"].y))
+                pass
         # self.environmentAttributes["screen"].fill((255,0,0))
         pass
     def update(self):
@@ -121,8 +163,11 @@ class Box:
         pass
     def debug(self):
         # print("\033[0;0H")
-        print(self.Attributes["id"], self.Attributes["Velocity"], )
-        pass
+        try:
+            if self.Attributes["Debug"]:
+                print(self.Attributes["id"], self.Attributes["Velocity"], )
+        except KeyError:
+            pass
     def __init__(self, Attr, env):
         # print()
         # print("initializing...", Attr["id"], Attr["Default"])
@@ -136,7 +181,18 @@ class Box:
             self.onCollision = self.Attributes["CollisionFunction"] if self.Attributes["Collider"] else EmptyFunction
         except KeyError:
             pass
+        try:
+            if self.Attributes["SwitchSprites"] == False:
+                self.spritesheet = self.Attributes["Sprites"]
+                self.sprites = self.Attributes["Sprites"].load_grid_images(self.Attributes["RowAndColumn"][0], self.Attributes["RowAndColumn"][1], x_padding= self.Attributes["Padding"][0], y_padding= self.Attributes["Padding"][1], x_margin= self.Attributes["Margin"][0], y_margin= self.Attributes["Margin"][1])
+            else:
+                self.sprites = []
+                for i in range(len(self.Attributes["Sprites"])):
+                    # self.spritesheet.append(self.Attributes["Sprites"][i])
+                    self.sprites.append(self.Attributes["Sprites"][i].load_grid_images(self.Attributes["RowAndColumn"][i][0], self.Attributes["RowAndColumn"][i][1], x_padding= self.Attributes["Padding"][i][0], y_padding= self.Attributes["Padding"][i][1], x_margin= self.Attributes["Margin"][i][0], y_margin= self.Attributes["Margin"][i][1]))
 
+        except KeyError:
+            pass
         # print("initialized...", self.Attributes["id"], self.Attributes["Default"])
         pass
 # x = Box(playerAttributes)
